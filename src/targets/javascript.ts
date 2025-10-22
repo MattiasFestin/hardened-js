@@ -9,14 +9,14 @@ export const jsFrozenBuiltins = [
   'Map', 'Set', 'WeakMap', 'WeakSet', 'Promise', 'Proxy', 'Reflect', 'JSON'
 ];
 
-export let hardenJs: (opts?: { ignoreReadonlyConstructorError?: boolean }) => void = function _hardenJs(opts?: { ignoreReadonlyConstructorError?: boolean }): void {
+export let hardenJs: (opts?: { ignoreReadonlyConstructorError?: boolean }) => void = function _hardenJs (opts?: { ignoreReadonlyConstructorError?: boolean }): void {
   'use strict';
   const GLOBAL: any = typeof window !== 'undefined' ? window : (globalThis as any);
   const ignoreCtorErr = !!(opts && opts.ignoreReadonlyConstructorError);
   let _origUncaught: any;
   if (ignoreCtorErr && typeof process !== 'undefined' && (process as any).on) {
-    _origUncaught = (process as any)._events && (process as any)._events['uncaughtException'];
-    (process as any).on('uncaughtException', function _harden_ignore(err: any) {
+    _origUncaught = (process as any)._events && (process as any)._events.uncaughtException;
+    (process as any).on('uncaughtException', function _hardenIgnore (err: any) {
       try {
         const msg = err && err.message ? err.message : String(err);
         if (msg && msg.includes("Cannot assign to read only property 'constructor'")) {
@@ -31,7 +31,7 @@ export let hardenJs: (opts?: { ignoreReadonlyConstructorError?: boolean }) => vo
   for (const name of jsFrozenBuiltins) {
     try {
       const target = GLOBAL[name];
-        if (isObjectLike(target)) {
+      if (isObjectLike(target)) {
         freezeDeep(target, name, undefined, undefined, { skipKeys: ['constructor'] });
         // Also freeze prototype objects when available
         if (target.prototype && isObjectLike(target.prototype)) {
@@ -53,7 +53,7 @@ export let hardenJs: (opts?: { ignoreReadonlyConstructorError?: boolean }) => vo
     hardenJs = function () { /* noop - already hardened */ };
   } catch (e) { /* ignore if reassignment not allowed */ }
   if (ignoreCtorErr && typeof process !== 'undefined' && (process as any).removeListener) {
-    try { (process as any).removeListener('uncaughtException', (process as any)._events && (process as any)._events['uncaughtException']); } catch (e) { }
-    try { if (_origUncaught) (process as any).on('uncaughtException', _origUncaught); } catch (e) { }
+    try { (process as any).removeListener('uncaughtException', (process as any)._events && (process as any)._events.uncaughtException); } catch (e) { }
+    try { if (_origUncaught) { (process as any).on('uncaughtException', _origUncaught); } } catch (e) { }
   }
 };

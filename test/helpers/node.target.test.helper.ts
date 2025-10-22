@@ -5,11 +5,11 @@ import { hardenNode } from '../../src/targets/node';
 // early, then attempt a strict-mode assignment to a given builtin and
 // return whether that assignment threw.
 
-function tryModifyBuiltinAssignment(builtinName: string) {
+function tryModifyBuiltinAssignment (builtinName: string): any {
   let caught: any = null;
   try {
-    (function () { 'use strict';
-      // @ts-ignore - intentionally referencing globals by name
+    (function () {
+      'use strict';
       (globalThis as any)[builtinName].INJECTED_TEST_PROP = 12345;
     })();
   } catch (e) {
@@ -18,8 +18,8 @@ function tryModifyBuiltinAssignment(builtinName: string) {
   return caught;
 }
 
-;(globalThis as any).__NODE_TARGET_HELPER__ = {
-  run(builtinName: string, opts?: { skip?: string[]; ignoreReadonlyConstructorError?: boolean }) {
+(globalThis as any).__NODE_TARGET_HELPER__ = {
+  run (builtinName: string, opts?: { skip?: string[]; ignoreReadonlyConstructorError?: boolean }) {
     try {
       // allow caller to pass a conservative skip list
       hardenNode({ skip: opts?.skip, ignoreReadonlyConstructorError: !!opts?.ignoreReadonlyConstructorError });
@@ -30,7 +30,6 @@ function tryModifyBuiltinAssignment(builtinName: string) {
     // Also report whether the property exists after the attempt. This lets the
     // caller assert either that assignment threw or that the property wasn't
     // created (environments may behave differently).
-    // @ts-ignore
     const has = Object.prototype.hasOwnProperty.call((globalThis as any)[builtinName] || {}, 'INJECTED_TEST_PROP');
     return { builtinName, threw: !!err, has };
   }

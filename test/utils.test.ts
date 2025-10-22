@@ -35,12 +35,13 @@ describe('utils (TypeScript)', () => {
   });
 
   it('freezeDeep freezes functions, getters and setters and traverses prototypes', () => {
-    function Fn() {}
+    function Fn () {}
     Fn.prototype.method = function () { return 1; };
     const obj: any = new (Fn as any)();
     Object.defineProperty(obj, 'val', {
-      get() { return 1; },
-      set(_) { /* noop */ },
+      get (): number { return 1; },
+      /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+      set (_v): void { /* noop */ },
       configurable: true,
       enumerable: true
     });
@@ -58,7 +59,7 @@ describe('utils (TypeScript)', () => {
     const failures: Array<{ path: string; err: string }> = [];
     // create a proxy that throws on freeze
     const bad = new Proxy({}, {
-      preventExtensions() { throw new Error('nope'); }
+      preventExtensions () { throw new Error('nope'); }
     });
     const ok = safeFreeze(bad, '<root.bad>', failures as any);
     expect(ok).toBe(false);

@@ -3,7 +3,7 @@ import { buildSync } from 'esbuild';
 import vm from 'vm';
 import path from 'path';
 
-function runInVmBundle(helperPath: string, builtinName: string, opts?: { skip?: string[]; ignoreReadonlyConstructorError?: boolean }) {
+function runInVmBundle (helperPath: string, builtinName: string, opts?: { skip?: string[]; ignoreReadonlyConstructorError?: boolean }): any {
   const res = buildSync({ entryPoints: [helperPath], bundle: true, platform: 'node', format: 'cjs', write: false });
   const code = res.outputFiles[0].text;
 
@@ -15,11 +15,11 @@ function runInVmBundle(helperPath: string, builtinName: string, opts?: { skip?: 
 }
 
 describe('node target (vm-isolated)', () => {
-  it('runs a small sample of builtins inside a vm', () => {
-  const helperPath = path.join(process.cwd(), 'test', 'helpers', 'node.target.test.helper.ts');
+  it('runs a small sample of builtins inside a vm', (): void => {
+    const helperPath = path.join(process.cwd(), 'test', 'helpers', 'node.target.test.helper.ts');
     const sample = ['Object', 'Array', 'Function'];
     for (const name of sample) {
-      const r = runInVmBundle(helperPath, name, { skip: ['module','require','exports','process','Buffer','console','global'], ignoreReadonlyConstructorError: true });
+      const r = runInVmBundle(helperPath, name, { skip: ['module', 'require', 'exports', 'process', 'Buffer', 'console', 'global'], ignoreReadonlyConstructorError: true });
       expect(r).toHaveProperty('builtinName', name);
       // Either the assignment threw (threw === true) or no property was created (has === false)
       expect(r.threw === true || r.has === false).toBe(true);
