@@ -1,0 +1,33 @@
+# Node
+node_modules/
+
+# Dist / build output
+dist/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE/editor
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# OS
+.DS_Store
+Thumbs.db
+
+# TypeScript
+*.tsbuildinfo
+
+# Coverage
+coverage/
+
+# temp
+*.tmp
+*.cache
+
+# Maps (optional: keep if you want sourcemaps in repo)
+# *.map
