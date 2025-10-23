@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { hardenJs, jsFrozenBuiltins, removeJs } from '../src/targets/javascript';
+import { hardenJs, removeJs } from '../src/targets/javascript';
+import { jsFrozenBuiltins } from '../src/targets/builtins';
 
 describe('javascript target (direct)', () => {
 	// NOTE: these tests intentionally call hardenJs() in-process (no VM) and therefore

@@ -6,3 +6,4 @@ export type { RemoveReport } from './remove';
 export { freezeDeep } from './freeze';
 export { removeFromRoot } from './remove';
 export { isObjectLike } from './object';
+export { setupIgnoreConstructorHandler, removeIgnoreConstructorHandler, freezeBuiltin } from './targetHelpers';

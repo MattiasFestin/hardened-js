@@ -1,4 +1,5 @@
 import { isObjectLike } from '../utils';
+import { isValidRoot } from './builtins';
 
 type RemoveReport = {
   removed: string[];
@@ -29,6 +30,11 @@ function tryRemoveFrom (root: any, path: string): { ok: boolean; err?: string } 
 	const segments = path.split('.').filter(Boolean);
 	if (segments.length === 0) {
 		return { ok: false, err: 'empty path' };
+	}
+	// Validate that the top-level root segment is a known builtin/root
+	const top = segments[0];
+	if (!isValidRoot(top)) {
+		return { ok: false, err: 'invalid root' };
 	}
 	function attemptRemoveProperty (target: any, name: string): { ok: boolean; err?: string } {
 		try {
