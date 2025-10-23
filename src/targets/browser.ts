@@ -10,61 +10,79 @@ export const browserFrozenBuiltins = [
 	'localStorage', 'sessionStorage', 'IndexedDB', 'Performance', 'navigator'
 ];
 
-export let hardenBrowser: (opts?: { ignoreReadonlyConstructorError?: boolean }) => void = function _hardenBrowser (opts?: { ignoreReadonlyConstructorError?: boolean }): void {
-	'use strict';
-	const GLOBAL: any = typeof window !== 'undefined' ? window : (globalThis as any);
-	const ignoreCtorErr = !!(opts && opts.ignoreReadonlyConstructorError);
-	let _origUncaught: any;
-	if (ignoreCtorErr && typeof process !== 'undefined' && (process as any).on) {
-		_origUncaught = (process as any)._events && (process as any)._events.uncaughtException;
-		(process as any).on('uncaughtException', function _hardenIgnore (err: any) {
-			try {
-				const msg = err && err.message ? err.message : String(err);
-				if (msg && msg.includes("Cannot assign to read only property 'constructor'")) {
-					return;
-				}
-			} catch (e) { }
+let _hardened = false;
+
+type HardenOpts = { ignoreReadonlyConstructorError?: boolean } | undefined;
+
+function setupIgnoreConstructorHandler (): ((err: unknown) => void) | undefined {
+	if (typeof process === 'undefined' || typeof (process as any).on !== 'function') { return undefined; }
+	const handler = (err: unknown): void => {
+		try {
+			const msg = err && (err as any).message ? (err as any).message : String(err);
+			if (typeof msg === 'string' && msg.includes("Cannot assign to read only property 'constructor'")) {
+				return;
+			}
+		} catch (_e) {
+			// fall through and rethrow below
+		}
+		if (err instanceof Error) {
 			throw err;
-		});
+		}
+		throw new Error(String(err));
+	};
+	try {
+		(process as any).on('uncaughtException', handler);
+		return handler;
+	} catch (e) {
+		return undefined;
 	}
+}
+
+function removeIgnoreConstructorHandler (handler?: (err: unknown) => void): void {
+	if (!handler || typeof process === 'undefined' || typeof (process as any).removeListener !== 'function') { return; }
+	try { (process as any).removeListener('uncaughtException', handler); } catch (e) { /* ignore */ }
+}
+
+function freezeBuiltin (globals: any, name: string, seen: WeakSet<any>): void {
+	try {
+		const target = globals[name];
+		if (!isObjectLike(target)) { return; }
+		freezeDeep(target, name, seen as any, undefined, { skipKeys: ['constructor'] });
+		if (isObjectLike((target as any).prototype)) {
+			freezeDeep((target as any).prototype, name + '.prototype', seen as any, undefined, { skipKeys: ['constructor'] });
+		}
+	} catch (e) {
+		// ignore failures for individual builtins
+	}
+}
+
+export function hardenBrowser (opts?: HardenOpts): void {
+	if (_hardened) { return; }
+	_hardened = true;
+
+	const GLOBAL: any = typeof window !== 'undefined' ? window : (globalThis as any);
+	const handler = opts && opts.ignoreReadonlyConstructorError ? setupIgnoreConstructorHandler() : undefined;
 
 	const seen = new WeakSet<any>();
-
-	function freezeDeepLocal (obj: any): void {
-		// Use the generic freezeDeep from utils but keep a local seen set to avoid cycles
-		freezeDeep(obj, '<root>', seen as any, undefined, { skipKeys: ['constructor'] });
-	}
-
 	for (const name of browserFrozenBuiltins) {
+		freezeBuiltin(GLOBAL, name, seen);
+	}
+
+	// Extra: freeze common prototypes when document exists
+	function freezeCommonPrototypes (): void {
 		try {
-			const target = GLOBAL[name];
-			if (isObjectLike(target)) {
-				freezeDeepLocal(target);
-				if (target.prototype && isObjectLike(target.prototype)) {
-					freezeDeepLocal(target.prototype);
-				}
-			}
-		} catch (e) { }
+			if (!GLOBAL.document) { return; }
+			if ((Document as any) && (Document as any).prototype) { freezeBuiltin(GLOBAL, 'Document', seen); }
+			if ((Element as any) && (Element as any).prototype) { freezeBuiltin(GLOBAL, 'Element', seen); }
+		} catch (e) { /* ignore */ }
 	}
+	freezeCommonPrototypes();
 
-	// Extra: freeze document/documentElement if possible (may be dangerous)
-	try {
-		if (GLOBAL.document) {
-			// Don't deep-freeze the document node: it may break the app.
-			// Instead, freeze prototype objects like Document.prototype and Element.prototype.
-			if ((Document as any) && (Document as any).prototype) { freezeDeepLocal((Document as any).prototype); }
-			if ((Element as any) && (Element as any).prototype) { freezeDeepLocal((Element as any).prototype); }
-		}
-	} catch (e) { }
+	try { Object.defineProperty(GLOBAL, '__WEBAPI_FROZEN__', { value: true, configurable: false, writable: false }); } catch (e) { /* ignore */ }
 
-	try { Object.defineProperty(GLOBAL, '__WEBAPI_FROZEN__', { value: true, configurable: false, writable: false }); } catch (e) { }
-	// Replace exported binding with a noop so subsequent calls are safe
-	try { hardenBrowser = function () { /* noop - already hardened */ }; } catch (e) { /* ignore */ }
-	if (ignoreCtorErr && typeof process !== 'undefined' && (process as any).removeListener) {
-		try { (process as any).removeListener('uncaughtException', (process as any)._events && (process as any)._events.uncaughtException); } catch (e) { }
-		try { if (_origUncaught) { (process as any).on('uncaughtException', _origUncaught); } } catch (e) { }
-	}
-};
+	// clean up temporary handler
+	removeIgnoreConstructorHandler(handler);
+}
 
 export function removeBrowser (paths?: string[]): import('../utils/remove').RemoveReport {
 	const G: any = typeof window !== 'undefined' ? window : (globalThis as any);
