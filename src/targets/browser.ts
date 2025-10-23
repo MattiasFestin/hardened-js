@@ -13,7 +13,6 @@ export function hardenBrowser (opts?: HardenOpts): void {
 	_hardened = true;
 	const auditFailures: AuditFailures = [];
 
-
 	const GLOBAL: GlobalLike = typeof window !== 'undefined' ? (window as unknown as GlobalLike) : (globalThis as GlobalLike);
 	const handler = opts && opts.ignoreReadonlyConstructorError ? setupIgnoreConstructorHandler() : undefined;
 

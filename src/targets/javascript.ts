@@ -11,7 +11,6 @@ export function hardenJs (opts?: HardenOpts): void {
 	if (_hardened) { return; }
 	_hardened = true;
 	const auditFailures: AuditFailures = [];
-	
 
 	const globals: GlobalLike = typeof window !== 'undefined' ? window as any : (globalThis as GlobalLike);
 

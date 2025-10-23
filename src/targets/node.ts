@@ -12,7 +12,6 @@ export function hardenNode (opts?: HardenOpts): void {
 	_hardened = true;
 	const auditFailures: AuditFailures = [];
 
-
 	const G: GlobalLike = typeof global !== 'undefined' ? (global as unknown as GlobalLike) : (globalThis as GlobalLike);
 	const seen = new WeakSet<any>();
 
