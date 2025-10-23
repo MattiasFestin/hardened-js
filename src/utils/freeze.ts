@@ -17,18 +17,17 @@ export function safeFreeze (obj: any, path?: string, auditFailures?: Array<{ pat
 	}
 }
 
+type AuditFailures = Array<{ path: string; err: string }>;
+
 export type FreezeOptions = { skipKeys?: Array<string | symbol> };
 
 export type FreezeDeepArgs = {
 	obj: any;
 	path?: string;
 	seen?: WeakSet<any>;
-	auditFailures?: Array<{ path: string; err: string }>;
+	auditFailures: AuditFailures;
 	options?: FreezeOptions;
 };
-
-type AuditFailures = Array<{ path: string; err: string }>;
-
 
 const safeCall = <T>(fn: () => T, auditFailures: AuditFailures, path: string, fallback?: T): T => {
 	try {
@@ -54,10 +53,9 @@ export function freezeDeep (args: FreezeDeepArgs): void {
 	if (!isObjectLike(obj) || seen.has(obj)) { return; }
 	seen.add(obj);
 
-
 	// safe freeze
 	safeCall(
-		() => { safeFreeze(obj, path, auditFailures); }, 
+		() => { safeFreeze(obj, path, auditFailures); },
 		auditFailures,
 		path + '.[[Call]]'
 	);
@@ -69,16 +67,15 @@ export function freezeDeep (args: FreezeDeepArgs): void {
 	}
 
 	// keys
-	const names: (string | symbol)[] = safeCall(() => Object.getOwnPropertyNames(obj), [] as string[], path + '.<names>');
-	const symbols: (string | symbol)[] = safeCall(() => Object.getOwnPropertySymbols(obj), [] as Array<string | symbol>, path + '.<symbols>', []);
+	const names: (string | symbol)[] = safeCall(() => Object.getOwnPropertyNames(obj), auditFailures, path + '.<names>', []);
+	const symbols: (string | symbol)[] = safeCall(() => Object.getOwnPropertySymbols(obj), auditFailures, path + '.<symbols>', []);
 	const allKeys = names.concat(symbols) as Array<string | symbol>;
 
 	for (const key of allKeys) {
-		try {
-			if (options && options.skipKeys && options.skipKeys.indexOf(key) !== -1) { continue; }
-		} catch (_) { /* ignore option errors */ }
+		const isSkippedKey = !!(options && options.skipKeys && options.skipKeys.indexOf(key) !== -1);
+		if (isSkippedKey) { continue; }
 
-		const desc = safeCall(() => Object.getOwnPropertyDescriptor(obj, key as any) as PropertyDescriptor | undefined, undefined, path + '.' + String(key));
+		const desc = safeCall(() => Object.getOwnPropertyDescriptor(obj, key as any) as PropertyDescriptor | undefined, auditFailures, path + '.' + String(key));
 		if (!desc) { continue; }
 
 		// value
@@ -87,7 +84,7 @@ export function freezeDeep (args: FreezeDeepArgs): void {
 				freezeDeep({ obj: (desc as any).value, path: path + '.' + String(key), seen, auditFailures, options });
 			}
 			return undefined;
-		}, undefined, path + '.' + String(key));
+		}, auditFailures, path + '.' + String(key));
 
 		// getter
 		safeCall(() => {
@@ -95,7 +92,7 @@ export function freezeDeep (args: FreezeDeepArgs): void {
 				freezeDeep({ obj: desc.get, path: path + '.<get ' + String(key) + '>', seen, auditFailures, options });
 			}
 			return undefined;
-		}, undefined, path + '.<get ' + String(key) + '>');
+		}, auditFailures, path + '.<get ' + String(key) + '>');
 
 		// setter
 		safeCall(() => {
@@ -103,6 +100,6 @@ export function freezeDeep (args: FreezeDeepArgs): void {
 				freezeDeep({ obj: desc.set, path: path + '.<set ' + String(key) + '>', seen, auditFailures, options });
 			}
 			return undefined;
-		}, undefined, path + '.<set ' + String(key) + '>');
+		}, auditFailures, path + '.<set ' + String(key) + '>');
 	}
 }
