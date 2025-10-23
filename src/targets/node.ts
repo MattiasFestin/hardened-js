@@ -1,6 +1,7 @@
 import { removeFromRoot } from '../utils/remove';
 import { nodeFrozenBuiltins } from './builtins';
 import { setupIgnoreConstructorHandler, removeIgnoreConstructorHandler, freezeBuiltin, type GlobalLike } from '../utils';
+import { AuditFailures } from '../utils/freeze';
 export { nodeFrozenBuiltins };
 let _hardened = false;
 
@@ -9,10 +10,11 @@ type HardenOpts = { skip?: string[]; ignoreReadonlyConstructorError?: boolean } 
 export function hardenNode (opts?: HardenOpts): void {
 	if (_hardened) { return; }
 	_hardened = true;
+	const auditFailures: AuditFailures = [];
+
 
 	const G: GlobalLike = typeof global !== 'undefined' ? (global as unknown as GlobalLike) : (globalThis as GlobalLike);
 	const seen = new WeakSet<any>();
-	const auditFailures: Array<{ path: string; err: string }> = [];
 
 	const skipSet = new Set<string>((opts && opts.skip) || []);
 	const handler = opts && opts.ignoreReadonlyConstructorError ? setupIgnoreConstructorHandler(auditFailures) : undefined;

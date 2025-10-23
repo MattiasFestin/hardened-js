@@ -17,7 +17,7 @@ export function safeFreeze (obj: any, path?: string, auditFailures?: Array<{ pat
 	}
 }
 
-type AuditFailures = Array<{ path: string; err: string }>;
+export type AuditFailures = Array<{ path: string; err: string }>;
 
 export type FreezeOptions = { skipKeys?: Array<string | symbol> };
 

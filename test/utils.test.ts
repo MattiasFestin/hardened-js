@@ -19,7 +19,7 @@ describe('utils (TypeScript)', () => {
 
 	it('freezeDeep freezes nested objects and arrays', () => {
 		const obj: any = { x: { y: [1, 2, { z: 3 }] } };
-		freezeDeep({ obj });
+		freezeDeep({ obj, auditFailures: [] });
 		expect(Object.isFrozen(obj)).toBe(true);
 		expect(Object.isFrozen(obj.x)).toBe(true);
 		expect(Object.isFrozen(obj.x.y)).toBe(true);
@@ -30,7 +30,7 @@ describe('utils (TypeScript)', () => {
 		const a: any = { name: 'a' };
 		const b: any = { name: 'b', ref: a };
 		a.ref = b; // create cycle
-		expect(() => freezeDeep({ obj: a })).not.toThrow();
+		expect(() => freezeDeep({ obj: a, auditFailures: [] })).not.toThrow();
 		expect(Object.isFrozen(a)).toBe(true);
 		expect(Object.isFrozen(b)).toBe(true);
 	});

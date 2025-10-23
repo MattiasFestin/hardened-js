@@ -1,5 +1,5 @@
 import { isObjectLike } from './object';
-import { freezeDeep } from './freeze';
+import { AuditFailures, freezeDeep } from './freeze';
 
 export function setupIgnoreConstructorHandler (auditFailures?: Array<{ path: string; err: string }>): ((err: unknown) => void) | undefined {
 	if (typeof process === 'undefined' || typeof (process as any).on !== 'function') { return undefined; }
@@ -29,7 +29,7 @@ export function removeIgnoreConstructorHandler (handler?: (err: unknown) => void
 	try { (process as any).removeListener('uncaughtException', handler); } catch (e) { /* ignore */ }
 }
 
-export function freezeBuiltin (globals: any, name: string, seen?: WeakSet<any>, auditFailures?: Array<{ path: string; err: string }>): void {
+export function freezeBuiltin (globals: any, name: string, seen: WeakSet<any>, auditFailures: AuditFailures): void {
 	try {
 		let target: any;
 		if (name === 'global') { target = globals; } else { target = globals[name]; }
