@@ -1,6 +1,6 @@
 {
   "name": "hardened-js",
-  "version": "0.2.1",
+  "version": "0.2.0",
   "description": "Small utilities to freeze/harden built-ins in JS environments",
   "main": "dist/node/node.js",
   "scripts": {
