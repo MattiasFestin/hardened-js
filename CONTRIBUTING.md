@@ -83,6 +83,45 @@ npm run build
 
 If you add new configuration or dev tools, include a short note in the PR explaining why.
 
+## Architecture Decision Records (ADRs)
+
+We record important architecture and technology decisions as Architecture Decision Records (ADRs) in `docs/adr/` so the rationale is discoverable and auditable.
+
+Requirement for new tech / public API changes
+
+Before introducing a new runtime technology, production dependency, or a change that adds or modifies a public API, authors MUST create an ADR that explains:
+
+- Motivation: why the change is needed.
+- Alternatives considered and why they were rejected.
+- Trade-offs and risks.
+
+Link the ADR from your PR description. This helps reviewers evaluate architectural impact and keeps the project's design history consistent.
+
+## Test-driven development (TDD) workflow
+
+We follow a TDD-first approach for behavioral changes and new features. The preferred workflow:
+
+1. Create types / interfaces that describe the intended input/output shapes.
+2. Write a failing test that encodes the desired behavior.
+3. Implement the minimal logic to make the test pass.
+4. Add another test that fails (iterate).
+
+Testing rules (mandatory):
+- Every behavioral change must include at least one positive (happy-path) and one negative (error/edge) test.
+- Edge case detection: include tests for boundary conditions, null/undefined inputs, and unexpected types where relevant.
+- Tests should be small, fast, and deterministic. Avoid flaky external dependencies in unit tests — use stubs/mocks where necessary.
+
+Example TDD cycle (quick):
+
+```md
+# 1. Add types/interfaces
+# 2. Write failing test: test/new-feature.test.ts
+# 3. Run tests and see failure: npm test
+# 4. Implement minimal code to satisfy test
+# 5. Re-run tests: npm test
+# 6. Add another failing test, repeat
+```
+
 ## Pull requests
 
 - Keep PRs small and focused. One logical change per PR.
@@ -121,3 +160,5 @@ Before requesting review, run through this list:
 If you're unsure about an approach or want to make a larger change, open an issue or start a draft PR and tag a reviewer. We're happy to discuss architecture and alternatives before large work begins.
 
 Thanks again — small, explicit, well-tested patches are the fastest way to get merged.
+
+
