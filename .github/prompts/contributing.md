@@ -10,6 +10,7 @@ Key points to include in a PR or discussion:
 - Any behavior changes or public API changes (explain rationale).
 - Tests added or updated (where to find them under `/test/`).
 - Linting and build status (run `npm run lint` and `npm run build`).
+- Before trying to fix linting issue manual try to run `npm run lint:fix`
 - Security or permission implications — state how privileges were minimized (POLP).
 
 Style checklist (quick)

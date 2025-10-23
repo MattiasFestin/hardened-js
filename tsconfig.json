@@ -10,5 +10,5 @@
     "outDir": "dist",
     "declaration": false
   },
-  "include": ["src/**/*", "test/**/*"]
+  "include": ["src/**/*", "test/**/*", "vitest.config.ts", "playwright.config.ts", "types/**/*.d.ts"]
 }

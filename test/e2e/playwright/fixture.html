@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>hardened-js e2e fixture</title>
+</head>
+<body>
+  <script src="/dist/hardenedjs.browser.js"></script>
+  <script>
+    // expose helpers for Playwright test to call
+    // esbuild was built with --global-name=HardenedJS so the bundle attaches to window.HardenedJS
+  const mod = window.HardenedJS || {};
+    window.HARDENED = {
+      harden: (mod.hardenAllBrowser && typeof mod.hardenAllBrowser === 'function') ? mod.hardenAllBrowser : (mod.default && typeof mod.default === 'function' ? mod.default : null),
+      removeAll: (mod.removeAllBrowser && typeof mod.removeAllBrowser === 'function') ? mod.removeAllBrowser : null,
+      // integrity worker helper (if present in bundle)
+      enableIntegrityWorker: (mod.enableIntegrityWorker && typeof mod.enableIntegrityWorker === 'function') ? mod.enableIntegrityWorker : (mod.default && mod.default.enableIntegrityWorker ? mod.default.enableIntegrityWorker : null),
+    };
+  </script>
+</body>
+</html>

@@ -5,7 +5,7 @@ import path from 'path';
 
 describe('node target (vm-isolated) - minimal removeNode test', () => {
 	it('removeNode removes and reports a top-level property inside vm', (): void => {
-		const helperPath = path.join(process.cwd(), 'test', 'helpers', 'node.target.test.helper.ts');
+		const helperPath = path.join(process.cwd(), 'test', 'helpers', 'node.target.helper.ts');
 		// create a top-level property inside the vm
 		const res = buildSync({ entryPoints: [helperPath], bundle: true, platform: 'node', format: 'cjs', write: false });
 		// create the TEMP_RM object and immediately call the helper's runRemove inside the VM

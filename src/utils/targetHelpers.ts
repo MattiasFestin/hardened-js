@@ -34,9 +34,9 @@ export function freezeBuiltin (globals: any, name: string, seen?: WeakSet<any>, 
 		let target: any;
 		if (name === 'global') { target = globals; } else { target = globals[name]; }
 		if (!isObjectLike(target)) { return; }
-		freezeDeep(target, name, seen as any, auditFailures, { skipKeys: ['constructor'] });
+		freezeDeep({ obj: target, path: name, seen: seen as any, auditFailures, options: { skipKeys: ['constructor'] } });
 		if (isObjectLike((target as any).prototype)) {
-			freezeDeep((target as any).prototype, name + '.prototype', seen as any, auditFailures, { skipKeys: ['constructor'] });
+			freezeDeep({ obj: (target as any).prototype, path: name + '.prototype', seen: seen as any, auditFailures, options: { skipKeys: ['constructor'] } });
 		}
 	} catch (e) {
 		if (auditFailures) { auditFailures.push({ path: name, err: e && (e as Error).message ? (e as Error).message : String(e) }); }

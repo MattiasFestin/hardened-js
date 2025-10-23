@@ -19,7 +19,7 @@ describe('utils (TypeScript)', () => {
 
 	it('freezeDeep freezes nested objects and arrays', () => {
 		const obj: any = { x: { y: [1, 2, { z: 3 }] } };
-		freezeDeep(obj);
+		freezeDeep({ obj });
 		expect(Object.isFrozen(obj)).toBe(true);
 		expect(Object.isFrozen(obj.x)).toBe(true);
 		expect(Object.isFrozen(obj.x.y)).toBe(true);
@@ -30,7 +30,7 @@ describe('utils (TypeScript)', () => {
 		const a: any = { name: 'a' };
 		const b: any = { name: 'b', ref: a };
 		a.ref = b; // create cycle
-		expect(() => freezeDeep(a)).not.toThrow();
+		expect(() => freezeDeep({ obj: a })).not.toThrow();
 		expect(Object.isFrozen(a)).toBe(true);
 		expect(Object.isFrozen(b)).toBe(true);
 	});
@@ -48,7 +48,7 @@ describe('utils (TypeScript)', () => {
 		});
 
 		const failures: Array<{ path: string; err: string }> = [];
-		freezeDeep(obj, '<root>', new WeakSet(), failures);
+		freezeDeep({ obj, path: '<root>', seen: new WeakSet(), auditFailures: failures });
 		// prototype should be frozen
 		const proto = Object.getPrototypeOf(obj);
 		expect(Object.isFrozen(proto)).toBe(true);

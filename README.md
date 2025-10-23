@@ -91,6 +91,37 @@ npm test
 
 - GitHub Actions workflow is included in `.github/workflows/ci.yml` — it runs lint and the test suite on push and pull requests.
 
+## End-to-end (E2E) browser tests
+
+This project includes Playwright-based E2E tests that run the library inside real browsers and assert runtime hardening behavior.
+
+To run the E2E tests locally:
+
+1. Build the browser bundle:
+
+```bash
+npm run build
+```
+
+2. Install Playwright browsers (once):
+
+```bash
+npx playwright install
+```
+
+3. Run Playwright tests (Chromium):
+
+```bash
+npm run test:e2e:ci
+```
+
+There are two npm scripts you can use:
+
+- `npm run test:e2e` — runs Playwright test runner (interactive)
+- `npm run test:e2e:ci` — runs Playwright tests in CI-like mode (headless, Chromium)
+
+If you run Playwright in CI, ensure the workflow installs browsers (see Playwright docs) or include `npx playwright install --with-deps` as part of your CI steps.
+
 ## License
 
 - MIT
