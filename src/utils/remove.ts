@@ -1,31 +1,32 @@
 import { isObjectLike } from './';
+import type { AnyObject } from './types';
 
 export type RemoveReport = {
-  removed: string[];
-  failures: Array<{ path: string; err: string }>;
+	removed: string[];
+	failures: Array<{ path: string; err: string }>;
 };
 
-export function resolveContainer (root: any, segments: string[]): { container: any; prop: string } | null {
+export function resolveContainer (root: AnyObject | undefined | null, segments: string[]): { container: AnyObject; prop: string } | null {
 	try {
-		let cur = root;
+		let cur: AnyObject | undefined | null = root as AnyObject | undefined | null;
 		for (let i = 0; i + 1 < segments.length; i++) {
 			const seg = segments[i];
 			if (!isObjectLike(cur)) {
 				return null;
 			}
-			cur = (cur as any)[seg];
+			cur = (cur as AnyObject)[seg as keyof AnyObject] as AnyObject | undefined | null;
 			if (cur === undefined || cur === null) {
 				return null;
 			}
 		}
 		const prop = segments[segments.length - 1];
-		return { container: cur, prop };
+		return { container: cur as AnyObject, prop };
 	} catch (e) {
 		return null;
 	}
 }
 
-export function attemptRemoveProperty (target: any, name: string): { ok: boolean; err?: string } {
+export function attemptRemoveProperty (target: AnyObject, name: string): { ok: boolean; err?: string } {
 	try {
 		const tgt = target as any;
 		try {
@@ -57,7 +58,7 @@ export function attemptRemoveProperty (target: any, name: string): { ok: boolean
 	}
 }
 
-export function tryRemoveFrom (root: any, path: string): { ok: boolean; err?: string } {
+export function tryRemoveFrom (root: AnyObject | undefined | null, path: string): { ok: boolean; err?: string } {
 	const segments = path.split('.').filter(Boolean);
 	if (segments.length === 0) {
 		return { ok: false, err: 'empty path' };
@@ -66,8 +67,8 @@ export function tryRemoveFrom (root: any, path: string): { ok: boolean; err?: st
 	if (segments.length === 1) {
 		const name = segments[0];
 		try {
-			if (name in root) {
-				return attemptRemoveProperty(root, name);
+			if (root && name in (root as AnyObject)) {
+				return attemptRemoveProperty(root as AnyObject, name);
 			}
 			return { ok: false, err: 'not present' };
 		} catch (e) {
@@ -93,7 +94,7 @@ export function tryRemoveFrom (root: any, path: string): { ok: boolean; err?: st
 	}
 }
 
-export function removeFromRoot (root: any, paths: string[] | undefined): RemoveReport {
+export function removeFromRoot (root: AnyObject | undefined | null, paths: string[] | undefined): RemoveReport {
 	const removed: string[] = [];
 	const failures: Array<{ path: string; err: string }> = [];
 	if (!paths || paths.length === 0) {

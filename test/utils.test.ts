@@ -36,7 +36,7 @@ describe('utils (TypeScript)', () => {
 	});
 
 	it('freezeDeep freezes functions, getters and setters and traverses prototypes', () => {
-		function Fn () {}
+		function Fn (): undefined { }
 		Fn.prototype.method = function () { return 1; };
 		const obj: any = new (Fn as any)();
 		Object.defineProperty(obj, 'val', {

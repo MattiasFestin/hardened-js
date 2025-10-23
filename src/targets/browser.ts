@@ -1,4 +1,4 @@
-import { setupIgnoreConstructorHandler, removeIgnoreConstructorHandler, freezeBuiltin } from '../utils';
+import { setupIgnoreConstructorHandler, removeIgnoreConstructorHandler, freezeBuiltin, type GlobalLike } from '../utils';
 import { removeFromRoot } from '../utils/remove';
 import { browserFrozenBuiltins } from './builtins';
 export { browserFrozenBuiltins };
@@ -11,7 +11,7 @@ export function hardenBrowser (opts?: HardenOpts): void {
 	if (_hardened) { return; }
 	_hardened = true;
 
-	const GLOBAL: any = typeof window !== 'undefined' ? window : (globalThis as any);
+	const GLOBAL: GlobalLike = typeof window !== 'undefined' ? (window as unknown as GlobalLike) : (globalThis as GlobalLike);
 	const handler = opts && opts.ignoreReadonlyConstructorError ? setupIgnoreConstructorHandler() : undefined;
 
 	const seen = new WeakSet<any>();

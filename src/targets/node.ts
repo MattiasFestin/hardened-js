@@ -1,6 +1,6 @@
 import { removeFromRoot } from '../utils/remove';
 import { nodeFrozenBuiltins } from './builtins';
-import { setupIgnoreConstructorHandler, removeIgnoreConstructorHandler, freezeBuiltin } from '../utils';
+import { setupIgnoreConstructorHandler, removeIgnoreConstructorHandler, freezeBuiltin, type GlobalLike } from '../utils';
 export { nodeFrozenBuiltins };
 let _hardened = false;
 
@@ -10,7 +10,7 @@ export function hardenNode (opts?: HardenOpts): void {
 	if (_hardened) { return; }
 	_hardened = true;
 
-	const G: any = typeof global !== 'undefined' ? global : (globalThis as any);
+	const G: GlobalLike = typeof global !== 'undefined' ? (global as unknown as GlobalLike) : (globalThis as GlobalLike);
 	const seen = new WeakSet<any>();
 	const auditFailures: Array<{ path: string; err: string }> = [];
 
